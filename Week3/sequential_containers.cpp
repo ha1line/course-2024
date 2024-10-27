@@ -1,9 +1,10 @@
 #include <iostream>
 #include <limits>
-#include "common/log_duration.h"
 #include <vector>
 #include <list>
+#include <forward_list>
 #include <string>
+#include "common/log_duration.h"
 
 int main()
 {
@@ -119,23 +120,23 @@ int main()
         std::cout << vec.size() << std::endl;
         std::cout << "-------------------------" << std::endl;
     }
-    {
-        LOG_DURATION("reserve + push_back");
-        std::vector<size_t> vec;
-        vec.reserve(1000000);
-        for (size_t i = 0; i < 1'000'000'000; ++i)
-        {
-            vec.push_back(i);
-        }
-    }
-    {
-        LOG_DURATION("push_back");
-        std::vector<size_t> vec;
-        for (size_t i = 0; i < 1'000'000'000; ++i)
-        {
-            vec.push_back(i);
-        }
-    }
+    // {
+    //     LOG_DURATION("reserve + push_back");
+    //     std::vector<size_t> vec;
+    //     vec.reserve(1000000);
+    //     for (size_t i = 0; i < 1'000'000'000; ++i)
+    //     {
+    //         vec.push_back(i);
+    //     }
+    // }
+    // {
+    //     LOG_DURATION("push_back");
+    //     std::vector<size_t> vec;
+    //     for (size_t i = 0; i < 1'000'000'000; ++i)
+    //     {
+    //         vec.push_back(i);
+    //     }
+    // }
     {
         std::cout << "-------------------------" << std::endl;
         std::vector<int> vec(10);
@@ -193,6 +194,7 @@ int main()
         }
         std::cout << std::endl;
         std::cout << "after sort" << std::endl;
+        // N * log(N)
         list.sort();
         for (const auto& it : list)
         {
@@ -209,8 +211,8 @@ int main()
              std::cout << it << " ";
         }
         std::cout << std::endl;
-        // since C++20, O(N) * log(N)
         std::cout << "after unique" << std::endl;
+        // since C++20, O(N) * log(N)
         list.unique();
         for (const auto& it : list)
         {
@@ -219,6 +221,23 @@ int main()
         std::cout << std::endl;
         std::cout << "-------------------------" << std::endl;
     }
+    {
+        // Since C++11
+        std::forward_list<int> list = {1, 2, 3};
+        // O(1)
+        list.insert_after(list.end(), 4);
+        // O(1)
+        // list.erase_after(std::prev(list.end()));
+        for (const auto& it : list)
+        {
+             std::cout << it << std::endl;
+        }
+    }
+    {
+        // std::deque ~ std::vector
+        // except push_front O(1), push_back O(1), not invalidate ref/ptr, invalidate it
+        // std::deque * 2 > std::vector
+        // std::deque = vec[0] -> vec[2]
+    }
     return 0;
 }
-
