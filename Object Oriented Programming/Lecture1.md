@@ -56,7 +56,7 @@ int main()
     return 0;
 }
 ```
-# Конструкторы классов
+## Конструкторы классов
 ```cpp
 struct S
 {
@@ -76,7 +76,7 @@ struct S
     int y = 0;
 };
 ```
-# Модификаторы доступа `public` и `private`
+## Модификаторы доступа `public` и `private`
 ```cpp
 class C
 {
