@@ -11,21 +11,21 @@
 class Date
 {
 private:
-  int year, month, day;
+  int __year, __month, __day;
 public:
-  Date(int y, int m, int d): year(y), month(m), day(d) {}
+  Date(int y, int m, int d): __year(y), __month(m), __day(d) {}
   ~Date() = default;
   int GetYear() const
   {
-    return year;
+    return __year;
   }
   int GetMonth() const
   {
-    return month;
+    return __month;
   }
   int GetDay() const
   {
-    return day;
+    return __day;
   }
 };
 
@@ -39,16 +39,18 @@ bool operator<(const Date& lhs, const Date& rhs)
 class Database
 {
 public:
+  Database() = default;
+  ~Database() = default;
   void AddEvent(const Date& date, const std::string& event)
   {
-      db[date].insert(event);
+      __db[date].insert(event);
   }
 
   bool DeleteEvent(const Date& date, const std::string& event)
   {
-    if (db.count(date) && db[date].count(event))
+    if (__db.count(date) && __db[date].count(event))
     {
-      db.erase(date);
+      __db[date].erase(event);
       return true;
     }
     return false;
@@ -56,17 +58,17 @@ public:
 
   int DeleteDate(const Date& date)
   {
-    int n = db[date].size();
-    db.erase(date);
+    int n = __db[date].size();
+    __db.erase(date);
     return n;
   }
 
   // будет зависеть от контейнера, который вы выберете
   std::set<std::string> Find(const Date& date) const
   {
-    if (db.count(date))
+    if (__db.count(date))
     {
-      return db.at(date);
+      return __db.at(date);
     }
     
     return std::set<std::string>();
@@ -74,7 +76,7 @@ public:
   
   void Print() const
   {
-    for (const auto& [date, events] : db)
+    for (const auto& [date, events] : __db)
     {
       if (date.GetYear() < 0) {continue;}
       for (const auto& event : events)
@@ -86,7 +88,7 @@ public:
     }
   }
 private:
-  std::map<Date, std::set<std::string>> db;
+  std::map<Date, std::set<std::string>> __db;
 };
 
 Date GetDate(const std::string& date_str)
