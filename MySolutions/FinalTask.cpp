@@ -28,11 +28,6 @@ public:
         return m_day;
     }
 
-    bool IsYearNegative() const noexcept
-    {
-        return m_year < 0;
-    }
-
 private:
     const int m_year = 0;
     const int m_month = 0;
@@ -53,37 +48,30 @@ std::ostream& operator<<(std::ostream& os, const Date& date)
     return os;
 }
 
-Date CreateDateFromString(std::string stringDate)
+Date CreateDateFromString(const std::string& stringDate)
 {
     int year;
     int month;
     int day;
     
     std::istringstream dateIS(stringDate);
-
+    bool areSeparatorsCorrect = true;
     dateIS >> year;
-    if (!dateIS || !(year >= -9999 && year <= 9999) || dateIS.peek() != '-')
-    {
-        throw std::runtime_error("Wrong date format: " + stringDate);
-    }
-    dateIS.ignore(1);
+    areSeparatorsCorrect = dateIS.get() == '-';
     dateIS >> month;
-    if (!dateIS || !(month >= -99 && month <= 99) || dateIS.peek() != '-')
-    {
-        throw std::runtime_error("Wrong date format: " + stringDate);
-    }
-    dateIS.ignore(1);
+    areSeparatorsCorrect = dateIS.get() == '-';
     dateIS >> day;
-    if (!dateIS || !(day >= -99 && day <= 99) || dateIS.peek() != -1)
+
+    if (!dateIS || !areSeparatorsCorrect || dateIS.peek() != -1)
     {
         throw std::runtime_error("Wrong date format: " + stringDate);
     }
 
-    if (!(month > 0 && month < 13))
+    if (month < 1 || month > 12)
     {
         throw std::runtime_error("Month value is invalid: " + std::to_string(month));
     }
-    if (!(day > 0 && day < 32))
+    if (day < 1 || day > 31)
     {
         throw std::runtime_error("Day value is invalid: " + std::to_string(day));
     }
@@ -96,56 +84,40 @@ class Database
 public:
     void AddEvent(const Date& date, const std::string& event) noexcept
     {
-        if (!m_base.count(date) > 0)
-        {
-            m_base[date] = { event };
-            return;
-        }
         m_base[date].insert(event);
     }
 
     bool DeleteEvent(const Date& date, const std::string& event) noexcept
     {
-        if (m_base.count(date) > 0 && m_base[date].count(event) > 0)
-        {
-            m_base[date].erase(event);
-            return true;
-        }
-        return false;
+        return m_base[date].erase(event) > 0;
     }
 
     int DeleteDate(const Date& date) noexcept
     {
-        if (m_base.count(date) > 0)
+        const auto it = m_base.find(date);
+        int deletedElementsCount = 0;
+        if (it != m_base.end())
         {
-            size_t eventsCount = m_base[date].size();
-            m_base[date].clear();
-            return eventsCount;
+            deletedElementsCount = (it -> second).size();
+            (it -> second).clear();
         }
-        return 0;
+        return deletedElementsCount;
     }
 
     std::set<std::string> Find(const Date& date) const noexcept
     {
-        if (m_base.count(date) > 0)
-        {
-            return m_base.at(date);
-        }
-        return {};
+        const auto it = m_base.find(date);
+        return (it == m_base.end()) ? std::set<std::string>() : it -> second;
     }
     
     void Print() const noexcept
     {
         for (const auto& [date, eventsSet] : m_base)
         {
-          if (date.IsYearNegative())
-          {
-              continue;
-          }
-          for (std::string event : eventsSet)
-          {
-              std::cout << date << ' ' << event << std::endl;
-          }
+            for (const std::string& event : eventsSet)
+            {
+                std::cout << date << ' ' << event << std::endl;
+            }
         }
     }
 
@@ -177,14 +149,8 @@ void ReadAndExecuteCommand(std::istream& is, Database& db)
         }
         else
         {
-            if (db.DeleteEvent(date, event))
-            {
-                std::cout << "Deleted successfully" << std::endl;
-            }
-            else
-            {
-                std::cout << "Event not found" << std::endl;
-            }
+            std::string outputMessage = (db.DeleteEvent(date, event)) ? "Deleted successfully" : "Event not found";
+            std::cout << outputMessage << std::endl;
         }
     }
     else if (command == "Find")
@@ -192,8 +158,7 @@ void ReadAndExecuteCommand(std::istream& is, Database& db)
         std::string stringDate;
         is >> stringDate;
         Date date = CreateDateFromString(stringDate);
-        std::set<std::string> dateEvents = db.Find(date);
-        for (std::string event : dateEvents)
+        for (const std::string& event : db.Find(date))
         {
             std::cout << event << std::endl;
         }
