@@ -11,21 +11,20 @@
 class Date
 {
 private:
-  int __year, __month, __day;
+  int m_year, m_month, m_day;
 public:
-  Date(int y, int m, int d): __year(y), __month(m), __day(d) {}
-  ~Date() = default;
+  Date(int y, int m, int d): m_year(y), m_month(m), m_day(d) {}
   int GetYear() const
   {
-    return __year;
+    return m_year;
   }
   int GetMonth() const
   {
-    return __month;
+    return m_month;
   }
   int GetDay() const
   {
-    return __day;
+    return m_day;
   }
 };
 
@@ -39,18 +38,16 @@ bool operator<(const Date& lhs, const Date& rhs)
 class Database
 {
 public:
-  Database() = default;
-  ~Database() = default;
   void AddEvent(const Date& date, const std::string& event)
   {
-      __db[date].insert(event);
+      m_db[date].insert(event);
   }
 
   bool DeleteEvent(const Date& date, const std::string& event)
   {
-    if (__db.count(date) && __db[date].count(event))
+    if (m_db.count(date) && m_db[date].count(event))
     {
-      __db[date].erase(event);
+      m_db[date].erase(event);
       return true;
     }
     return false;
@@ -58,25 +55,26 @@ public:
 
   int DeleteDate(const Date& date)
   {
-    int n = __db[date].size();
-    __db.erase(date);
+    int n = m_db[date].size();
+    m_db.erase(date);
     return n;
   }
 
   // будет зависеть от контейнера, который вы выберете
   std::set<std::string> Find(const Date& date) const
   {
-    if (__db.count(date))
+    auto today = m_db.find(date);
+    if (today != m_db.end())
     {
-      return __db.at(date);
+      return today->second;
     }
     
-    return std::set<std::string>();
+    return {};
   }
   
   void Print() const
   {
-    for (const auto& [date, events] : __db)
+    for (const auto& [date, events] : m_db)
     {
       if (date.GetYear() < 0) {continue;}
       for (const auto& event : events)
@@ -88,7 +86,7 @@ public:
     }
   }
 private:
-  std::map<Date, std::set<std::string>> __db;
+  std::map<Date, std::set<std::string>> m_db;
 };
 
 Date GetDate(const std::string& date_str)
@@ -107,13 +105,11 @@ Date GetDate(const std::string& date_str)
   }
   if (month < 1 || month > 12)
   {
-    std::string month_error = std::to_string(month);
-    throw std::invalid_argument("Month value is invalid: " + month_error);
+    throw std::invalid_argument("Month value is invalid: " + std::to_string(month));
   }
   if (day < 1 || day > 31)
   {
-    std::string day_error = std::to_string(day);
-    throw std::invalid_argument("Day value is invalid: " + day_error);
+    throw std::invalid_argument("Day value is invalid: " + std::to_string(day));
   }
 
   return Date(year, month, day);
