@@ -138,13 +138,10 @@ int main()
     {
         const char* str = "Hello, World!";
         dummy_string dstr(str);
-        std::reverse(dstr.begin(), dstr.end());
-        for (auto it = dstr.begin(); it != dstr.end(); ++it)
-        {
-            std::cout << *it << std::endl;
-        }
+        std::cout << dstr.C_str() + dstr.Size() - 1 << std::endl;
     }
     {
+        std::cout << "new" << std::endl;
         std::vector<std::string> vec = {"first", "second", "third"};
         dummy_random_access_iterator<std::string> begin(vec.data());
         dummy_random_access_iterator<std::string> end(vec.data() + vec.size());
